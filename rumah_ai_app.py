@@ -1,89 +1,71 @@
-
 import streamlit as st
 import replicate
 import openai
 import os
 
-# Judul aplikasi
+# ======================
+# Ambil API Key dari Streamlit Secrets
+# ======================
+REPLICATE_API_TOKEN = st.secrets.get("REPLICATE_API_TOKEN", None)
+OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", None)
+
+if REPLICATE_API_TOKEN:
+    os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
+else:
+    st.error("⚠️ REPLICATE_API_TOKEN belum diatur di Secrets Streamlit.")
+    st.stop()
+
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
+else:
+    st.warning("⚠️ OPENAI_API_KEY belum diatur. Fitur OpenAI mungkin tidak berfungsi.")
+
+# ======================
+# UI Aplikasi
+# ======================
 st.title("🏡 Rumah AI Sketsa")
-st.write("Buat gambaran sketsa rumah dengan AI berdasarkan ukuran tanah, jumlah lantai, dan fitur tambahan.")
+st.write("Masukkan detail rumah dan dapatkan sketsa AI sesuai ukuran dan fitur pilihan Anda.")
 
 # Input ukuran tanah
-ukuran_tanah = st.text_input("Masukkan ukuran tanah (contoh: 10x20 meter atau 1000 cm² atau 0.5 hektar)")
-jumlah_lantai = st.number_input("Jumlah lantai", min_value=1, max_value=10, value=1)
+ukuran_tanah = st.number_input("Masukkan ukuran tanah", min_value=1.0, step=1.0)
+satuan_tanah = st.selectbox("Pilih satuan", ["cm", "m", "hektar"])
 
-# Pilihan fitur tambahan
-fitur = st.multiselect("Pilih fitur tambahan", [
-    "Halaman rumah",
-    "Kolam renang",
-    "Toilet dalam",
-    "Toilet luar",
-    "Ruang tamu",
-    "Tempat parkir",
-    "Pagar rumah"
-])
+# Jumlah lantai
+jumlah_lantai = st.number_input("Jumlah lantai rumah", min_value=1, step=1)
 
-# API Keys
-REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Fitur tambahan
+fitur_tambahan = st.multiselect(
+    "Pilih fitur tambahan:",
+    ["Halaman rumah", "Kolam renang", "Toilet dalam", "Toilet luar", "Ruang tamu", "Tempat parkir", "Pagar rumah"]
+)
 
-# Fungsi generate sketsa dengan Replicate
-def generate_sketsa(prompt):
-    model = "stability-ai/stable-diffusion-xl"
-    output = replicate.run(
-        model + ":9d7a5f6530d20e8ed1a7818a2355cf0c74208fcb1b31e2ba730c6c78d5d0e9f3",
-        input={"prompt": prompt, "width": 512, "height": 512}
-    )
-    return output[0] if output else None
+# ======================
+# Fungsi Generate Gambar
+# ======================
+def generate_sketsa(ukuran, satuan, lantai, fitur):
+    prompt = f"Sketsa rumah {lantai} lantai dengan ukuran tanah {ukuran} {satuan}, dilengkapi {', '.join(fitur)}."
+    try:
+        output = replicate.run(
+            "stability-ai/stable-diffusion:db21e45e1de...ganti_dengan_version_ID",
+            input={
+                "prompt": prompt,
+                "width": 512,
+                "height": 512
+            }
+        )
+        return output
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat memanggil Replicate API: {str(e)}")
+        return None
 
-# Fungsi buat deskripsi gambar dengan OpenAI
-def describe_image(image_url):
-    client = openai.OpenAI(api_key=OPENAI_API_KEY)
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "Deskripsikan gambar rumah ini secara singkat dan menarik."},
-            {"role": "user", "content": f"Deskripsikan gambar berikut: {image_url}"}
-        ]
-    )
-    return response.choices[0].message["content"]
-
-# Fungsi buat rekomendasi denah
-def recommend_layout(ukuran, lantai, fitur_list):
-    fitur_text = ", ".join(fitur_list) if fitur_list else "tanpa fitur tambahan"
-    prompt = f"Buat rekomendasi denah rumah ukuran {ukuran}, {lantai} lantai, dengan {fitur_text}."
-    client = openai.OpenAI(api_key=OPENAI_API_KEY)
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message["content"]
-
-# Tombol generate sketsa
-if st.button("🎨 Generate Sketsa"):
-    if not ukuran_tanah:
-        st.warning("Masukkan ukuran tanah terlebih dahulu!")
+# ======================
+# Tombol Generate
+# ======================
+if st.button("🔍 Buat Sketsa"):
+    if not fitur_tambahan:
+        st.warning("Pilih minimal satu fitur tambahan rumah.")
     else:
-        prompt_text = f"Sketsa arsitektur rumah ukuran {ukuran_tanah}, {jumlah_lantai} lantai, dengan fitur: {', '.join(fitur)}"
-        image_url = generate_sketsa(prompt_text)
-        if image_url:
-            st.image(image_url, caption="Sketsa Rumah AI")
-            st.session_state["generated_image"] = image_url
-        else:
-            st.error("Gagal membuat sketsa. Periksa API key Replicate Anda.")
-
-# Tombol buat deskripsi dari sketsa
-if st.button("📝 Buat Deskripsi dari Sketsa"):
-    if "generated_image" in st.session_state:
-        desc = describe_image(st.session_state["generated_image"])
-        st.success(desc)
-    else:
-        st.warning("Buat sketsa dulu sebelum mendeskripsikannya.")
-
-# Tombol buat rekomendasi denah
-if st.button("📐 Buat Rekomendasi Denah"):
-    if ukuran_tanah:
-        denah = recommend_layout(ukuran_tanah, jumlah_lantai, fitur)
-        st.info(denah)
-    else:
-        st.warning("Masukkan ukuran tanah terlebih dahulu.")
+        st.info("⏳ Membuat sketsa AI, harap tunggu...")
+        result = generate_sketsa(ukuran_tanah, satuan_tanah, jumlah_lantai, fitur_tambahan)
+        if result:
+            st.image(result, caption="Sketsa AI", use_column_width=True)
