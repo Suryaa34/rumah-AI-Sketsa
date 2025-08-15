@@ -1,21 +1,35 @@
+
 # 🏡 Rumah AI Sketsa
 
-Aplikasi Streamlit untuk membantu membuat **gambaran sketsa rumah** menggunakan AI, berdasarkan:
-- Ukuran tanah (cm, meter, hektar)
-- Jumlah tingkat rumah
-- Fitur tambahan (halaman, kolam renang, toilet dalam/luar, ruang tamu, tempat parkir, pagar rumah)
+Aplikasi Streamlit untuk membuat **gambaran sketsa rumah** menggunakan AI (Replicate + OpenAI).
 
-AI akan memberikan rekomendasi **sketsa arsitektur** sesuai ukuran dan fitur pilihan pengguna.
+## 🚀 Fitur
+- Input ukuran tanah (cm/m/hektar)
+- Pilih jumlah lantai
+- Pilih fitur tambahan rumah
+- Generate gambar/sketsa AI dengan Replicate
+- Deskripsi gambar menggunakan OpenAI
+- Rekomendasi denah rumah menggunakan OpenAI
 
----
+## 📦 Instalasi
+1. Clone repo ini
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Jalankan:
+   ```bash
+   streamlit run app.py
+   ```
 
-## 📌 Fitur Utama
-1. Input ukuran tanah (cm/m/hektar)
-2. Pilih jumlah lantai rumah
-3. Checklist fitur tambahan rumah
-4. Menghasilkan sketsa/gambar AI rekomendasi
-5. Tampilan interaktif di Streamlit
+## 🔑 API Keys
+Tambahkan di **Streamlit Secrets** atau environment variables:
+```
+REPLICATE_API_TOKEN=token_anda
+OPENAI_API_KEY=key_anda
+```
 
----
-
-## 📂 Struktur Project
+## 📌 Deploy di Streamlit Cloud
+1. Upload repo ke GitHub
+2. Hubungkan ke Streamlit Cloud
+3. Tambahkan Secrets seperti di atas
