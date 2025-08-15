@@ -1,32 +1,21 @@
-# 🏠 Perancang Sketsa Rumah (AI+) — Streamlit
+# 🏡 Rumah AI Sketsa
 
-Aplikasi ini membuat **site plan + denah konseptual (SVG)** dari ukuran lahan, jumlah lantai, dan fitur pilihan; menampilkan **estimasi luas ruang**; serta bisa **generate render AI** (opsional) via OpenAI Images atau Replicate SDXL.
+Aplikasi Streamlit untuk membantu membuat **gambaran sketsa rumah** menggunakan AI, berdasarkan:
+- Ukuran tanah (cm, meter, hektar)
+- Jumlah tingkat rumah
+- Fitur tambahan (halaman, kolam renang, toilet dalam/luar, ruang tamu, tempat parkir, pagar rumah)
 
-## ✨ Fitur
-- Input ukuran lahan (m/cm), jumlah lantai, fitur (halaman, kolam, toilet, ruang tamu, parkir, pagar).
-- Site plan & denah per lantai (multi-tab), **unduh SVG**.
-- **Estimasi luas** per fungsi ruang (otomatis).
-- **Prompt** rekomendasi untuk generator gambar AI.
-- (Opsional) **AI Render** via:
-  - **OpenAI Images** (`OPENAI_API_KEY`)
-  - **Replicate SDXL** (`REPLICATE_API_TOKEN`)
+AI akan memberikan rekomendasi **sketsa arsitektur** sesuai ukuran dan fitur pilihan pengguna.
 
-## 🛠️ Jalankan Lokal
-```bash
-pip install -r requirements.txt
-streamlit run rumah_ai_app.py
-```
+---
 
-## ☁️ Deploy (Streamlit Community Cloud)
-1. Buat repo Public, upload tiga file:
-   - `rumah_ai_app.py`
-   - `requirements.txt`
-   - `README.md`
-2. Di Streamlit Cloud → New app → pilih repo & branch → **Main file path**: `rumah_ai_app.py` → Deploy.
+## 📌 Fitur Utama
+1. Input ukuran tanah (cm/m/hektar)
+2. Pilih jumlah lantai rumah
+3. Checklist fitur tambahan rumah
+4. Menghasilkan sketsa/gambar AI rekomendasi
+5. Tampilan interaktif di Streamlit
 
-### 🔐 Secrets (opsional, untuk AI Render)
-Di Streamlit Cloud, buka **App → Settings → Secrets**, isi:
-```toml
-OPENAI_API_KEY = "sk-..."
-REPLICATE_API_TOKEN = "r8_..."
-```
+---
+
+## 📂 Struktur Project
